@@ -1,53 +1,99 @@
-// Keyboard and pointer input. Held keys give a steering direction; one-shot presses (start or
-// restart, pause) are queued as bit flags and taken once by the loop, so a press between two
-// frames is never lost and never counted twice.
+/**
+ * Input handling for Maravilla
+ */
 
-export const ACTION_CONFIRM = 1;
-export const ACTION_PAUSE = 2;
+export class InputManager {
+  constructor() {
+    this.keys = new Set();
+    this.keysPressed = new Set();
+    this.keysReleased = new Set();
+    this.mouse = { x: 0, y: 0, deltaX: 0, deltaY: 0, buttons: new Set() };
+    this.locked = false;
+    this._bindEvents();
+  }
 
-const LEFT = new Set(['ArrowLeft', 'KeyA']);
-const RIGHT = new Set(['ArrowRight', 'KeyD']);
-const CONFIRM = new Set(['Space', 'Enter']);
-const PAUSE = new Set(['KeyP', 'Escape']);
+  _bindEvents() {
+    window.addEventListener('keydown', (e) => {
+      const code = e.code;
+      if (!this.keys.has(code)) {
+        this.keysPressed.add(code);
+      }
+      this.keys.add(code);
+      
+      // Prevent default for game keys
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyR', 'KeyM', 'KeyP', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'ControlLeft'].includes(code)) {
+        e.preventDefault();
+      }
+    });
 
-export function createInput(target) {
-  let left = false;
-  let right = false;
-  let actions = 0;
+    window.addEventListener('keyup', (e) => {
+      const code = e.code;
+      this.keys.delete(code);
+      this.keysReleased.add(code);
+    });
 
-  window.addEventListener('keydown', (event) => {
-    if (LEFT.has(event.code)) left = true;
-    else if (RIGHT.has(event.code)) right = true;
-    else if (CONFIRM.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_CONFIRM;
-    } else if (PAUSE.has(event.code)) {
-      if (!event.repeat) actions |= ACTION_PAUSE;
-    } else return;
-    event.preventDefault();
-  });
-  window.addEventListener('keyup', (event) => {
-    if (LEFT.has(event.code)) left = false;
-    else if (RIGHT.has(event.code)) right = false;
-  });
-  // A key released while the tab is hidden never sends keyup: let go of everything on blur.
-  window.addEventListener('blur', () => {
-    left = false;
-    right = false;
-  });
-  target.addEventListener('pointerdown', () => {
-    actions |= ACTION_CONFIRM;
-  });
+    window.addEventListener('mousemove', (e) => {
+      if (this.locked) {
+        this.mouse.deltaX = e.movementX;
+        this.mouse.deltaY = e.movementY;
+      } else {
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
+      }
+    });
 
-  return {
-    /** -1 for left, 1 for right, 0 for neither or both. */
-    direction() {
-      return (right ? 1 : 0) - (left ? 1 : 0);
-    },
-    /** The one-shot presses since the last call, as ACTION_* flags. */
-    takeActions() {
-      const taken = actions;
-      actions = 0;
-      return taken;
-    },
-  };
+    window.addEventListener('mousedown', (e) => {
+      this.mouse.buttons.add(e.button);
+      if (!this.locked && e.button === 0) {
+        this.lockPointer();
+      }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      this.mouse.buttons.delete(e.button);
+    });
+
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    document.addEventListener('pointerlockchange', () => {
+      this.locked = document.pointerLockElement === document.body;
+    });
+  }
+
+  lockPointer() {
+    document.body.requestPointerLock().catch(() => {});
+  }
+
+  unlockPointer() {
+    document.exitPointerLock();
+  }
+
+  isDown(code) {
+    return this.keys.has(code);
+  }
+
+  wasPressed(code) {
+    return this.keysPressed.has(code);
+  }
+
+  wasReleased(code) {
+    return this.keysReleased.has(code);
+  }
+
+  isMouseDown(button = 0) {
+    return this.mouse.buttons.has(button);
+  }
+
+  getMouseDelta() {
+    const dx = this.mouse.deltaX;
+    const dy = this.mouse.deltaY;
+    this.mouse.deltaX = 0;
+    this.mouse.deltaY = 0;
+    return { x: dx, y: dy };
+  }
+
+  clearFrame() {
+    this.keysPressed.clear();
+    this.keysReleased.clear();
+  }
 }

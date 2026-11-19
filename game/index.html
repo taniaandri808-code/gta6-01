@@ -1,19 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Block Dodger</title>
-<style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #11141b; }
-  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  /* Read aloud, never shown: the status line screen readers announce. */
-  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARAVILLA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; font-family: Inter, Roboto, HelveticaNeue, Arial, sans-serif; }
+    canvas { display: block; }
+    
+    #start-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; z-index: 100; overflow: hidden;
+    }
+    #start-screen::before {
+      content: ; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50%% 20%%, rgba(255,154,158,0.15) 0%%, transparent 50%%),
+                  radial-gradient(ellipse at 80%% 80%%, rgba(250,208,196,0.1) 0%%, transparent 40%%);
+      pointer-events: none;
+    }
+    #start-screen h1 {
+      font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #ff9a9e 0%%, #fad0c4 50%%, #fbc2eb 100%%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 60px rgba(255,154,158,0.4);
+      animation: titlePulse 3s ease-in-out infinite;
+    }
+    @keyframes titlePulse { 0%%,100%% { filter: brightness(1); } 50%% { filter: brightness(1.2); } }
+    #start-screen .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.5rem); color: rgba(255,255,255,0.7);
+      letter-spacing: 0.5em; text-transform: uppercase; margin-bottom: 2rem;
+    }
+    #start-screen .tagline {
+      font-size: 1.1rem; color: rgba(255,255,255,0.5); max-width: 600px;
+      text-align: center; line-height: 1.6; margin-bottom: 3rem;
+    }
+    #play-btn {
+      padding: 1rem 3rem; font-size: 1.25rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #1a1a2e; background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+      border: none; border-radius: 50px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 10px 40px rgba(255,154,158,0.4);
+    }
+    #play-btn:hover { transform: scale(1.05); box-shadow: 0 15px 50px rgba(255,154,158,0.6); }
+    #play-btn:active { transform: scale(0.98); }
+    
+    .controls-panel { margin-top: 2rem; padding: 1.5rem 2rem; background: rgba(0,0,0,0.3);
+      border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px); text-align: left; min-width: 320px; }
+    .controls-panel h3 { color: #ff9a9e; margin-bottom: 1rem; font-size: 1rem; letter-spacing: 0.1em; }
+    .controls-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 2rem; font-size: 0.85rem; }
+    .controls-grid .key { color: #fad0c4; font-weight: 600; }
+    
+    #continue-btn { margin-top: 1rem; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      padding: 0.75rem 2rem; border-radius: 50px; cursor: pointer; font-size: 0.95rem;
+      transition: border-color 0.2s, background 0.2s; }
+    #continue-btn:hover { border-color: #ff9a9e; background: rgba(255,154,158,0.1); }
+    
+    #pause-menu {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; z-index: 200; gap: 1.5rem;
+    }
+    #pause-menu h2 { font-size: 2.5rem; letter-spacing: 0.2em; }
+    #pause-menu button { padding: 1rem 2.5rem; font-size: 1.1rem; background: transparent;
+      color: #fff; border: 1px solid rgba(255,255,255,0.4); border-radius: 50px; cursor: pointer;
+      transition: all 0.2s; min-width: 220px; }
+    #pause-menu button:hover { background: rgba(255,154,158,0.2); border-color: #ff9a9e; }
+    
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-<canvas id="game" aria-label="Block Dodger: move the paddle left and right to dodge falling blocks and catch coins"></canvas>
-<p id="status" role="status" aria-live="polite"></p>
-<script type="module" src="./src/main.js"></script>
+  <div id="start-screen">
+    <h1>MARAVILLA</h1>
+    <div class="subtitle">Sunset Coastal Crime Saga</div>
+    <div class="tagline">Rise through the underworld of a city that never sleeps. Steal, shoot, drive, survive.</div>
+    <button id="play-btn">New Game</button>
+    <button id="continue-btn" class="hidden">Continue</button>
+    <div class="controls-panel">
+      <h3>CONTROLS</h3>
+      <div class="controls-grid">
+        <span><span class="key">WASD</span> Move / Drive</span>
+        <span><span class="key">Shift</span> Sprint / Handbrake</span>
+        <span><span class="key">Space</span> Jump</span>
+        <span><span class="key">E</span> Enter/Exit Vehicle</span>
+        <span><span class="key">Mouse</span> Aim / Camera</span>
+        <span><span class="key">LMB</span> Shoot / Accelerate</span>
+        <span><span class="key">1-4</span> Weapons</span>
+        <span><span class="key">R</span> Reload / Radio</span>
+        <span><span class="key">M</span> Radio Station</span>
+        <span><span class="key">P</span> Pause</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="pause-menu" class="hidden">
+    <h2>PAUSED</h2>
+    <button id="resume-btn">Resume</button>
+    <button id="save-btn">Save Game</button>
+    <button id="quit-btn">Quit to Title</button>
+  </div>
+
+  <script src="vendor/three.min.js"></script>
+  <script type="importmap">{"imports":{"three":"./src/three-shim.js"}}</script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>
