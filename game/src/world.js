@@ -176,7 +176,8 @@ export function createWorld(scene) {
   const buildingMatBase = new THREE.MeshStandardMaterial({ roughness: 0.7, metalness: 0.1 });
   
   for (const district of DISTRICTS) {
-    const bounds = district.bounds;
+    const bounds = district.bounds || { minX: district.center.x - district.radius, maxX: district.center.x + district.radius, minZ: district.center.z - district.radius, maxZ: district.center.z + district.radius };
+    const density = district.density ?? district.buildingDensity ?? 0.5;
     const width = bounds.maxX - bounds.minX;
     const depth = bounds.maxZ - bounds.minZ;
     const blocksX = Math.floor(width / 60);
@@ -184,7 +185,7 @@ export function createWorld(scene) {
     
     for (let bx = 0; bx < blocksX; bx++) {
       for (let bz = 0; bz < blocksZ; bz++) {
-        if (rng.next() > district.density) continue;
+        if (rng.next() > density) continue;
         
         const blockX = bounds.minX + bx * 60 + rng.nextFloat(-10, 10);
         const blockZ = bounds.minZ + bz * 60 + rng.nextFloat(-10, 10);

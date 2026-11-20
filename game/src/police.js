@@ -1,7 +1,8 @@
 /**
  * Police/wanted system for Maravilla
  */
-import { WANTED, COPS, CAR_TYPES } from './config.js';
+import { WANTED, COPS } from './config.js';
+import { CAR_TYPES } from './vehicles.js';
 import { clamp, distance2D, lerp, angleDiff, wrapAngle, normalizeVec2, vec2Length, vec2Add, vec2Scale, randomRange, randomChoice } from './math.js';
 import * as THREE from 'three';
 

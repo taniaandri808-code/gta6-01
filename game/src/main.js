@@ -9,7 +9,7 @@ import { MissionManager } from './missions.js';
 import { ChaseCamera } from './camera.js';
 import { InputManager } from './input.js';
 import { UI, Dialogue } from './ui.js';
-import { Radio } from './radio.js';
+import { RadioStations as Radio } from './radio.js';
 import { SaveSystem } from './save.js';
 import { AudioManager } from './audio.js';
 
@@ -17,6 +17,7 @@ import { AudioManager } from './audio.js';
 let scene, camera, renderer, world, player, police, missions, ui, dialogue, audio, save, radio, traffic;
 let camCtl, input, clock, elapsed = 0;
 let started = false, paused = false, missionTimer = 0;
+let extrasUpdate = null;
 
 function init() {
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -56,6 +57,7 @@ function init() {
   scene.add(starter.mesh);
   world.vehicles.push(starter);
   bindUI();
+  extrasUpdate = initExtras({ world, player, camera, police, traffic, missions, ui, audio, input, camCtl, save, renderer, scene });
   clock = { last: performance.now() };
   requestAnimationFrame(loop);
 }
@@ -65,8 +67,8 @@ function bindUI() {
     started = true;
     audio.init();
     radio.init();
-    radio.nextStation();
-    ui.setRadio(radio.getCurrentStationInfo()?.name || 'Radio off');
+    radio.next();
+    ui.setRadio(radio.stations[radio.currentStation]?.name || 'Radio off');
     ui.setHealth(player.health, PLAYER_MAX);
     ui.setMoney(player.money);
     setTimeout(() => {
@@ -121,9 +123,61 @@ function loop() {
   ui.setHealth(player.health, PLAYER_MAX);
   ui.setMoney(player.money);
   ui.setWanted(police.wantedLevel);
-  radio.update(delta);
+  if (radio.update) radio.update(delta);
+  if (extrasUpdate) extrasUpdate(delta, elapsed);
   renderer.render(scene, camera);
 }
 
 const PLAYER_MAX = 100;
+
+// --- Extras integration ---
+import { BoostSystem } from './boost.js';
+import { PhotoMode } from './photomode.js';
+import { RadioStations } from './radio.js';
+import { WeatherSystem } from './weather.js';
+import { Minimap } from './minimap.js';
+import { WantedSystem } from './wanted.js';
+import { ChaseCam } from './chasecam.js';
+import { Achievements } from './achievements.js';
+import { SettingsMenu } from './settings.js';
+import { Deliveries } from './deliveries.js';
+
+let boost, photo, radioStations, weather, minimap, wantedSys, chaseCam, achievements, settings, deliveries;
+
+export function initExtras(GAME) {
+  const { world, player, camera, police, traffic, missions, ui, audio, input, camCtl, save, renderer, scene } = GAME;
+  
+  boost = new BoostSystem(player, input);
+  photo = new PhotoMode(camera, renderer, scene);
+  radioStations = new RadioStations(audio);
+  weather = new WeatherSystem(scene, world);
+  minimap = new Minimap(player, world, camera);
+  wantedSys = new WantedSystem(police, player, world);
+  chaseCam = new ChaseCam(camera, player.mesh, input);
+  achievements = new Achievements(player, missions, ui);
+  settings = new SettingsMenu(audio, radio, ui, input);
+  deliveries = new Deliveries(world, player, missions, ui);
+
+  // Key handlers
+  input.on('KeyB', () => boost.toggle());        // Shift handled in BoostSystem
+  input.on('KeyP', () => photo.toggle());        // Photo mode
+  input.on('KeyM', () => radioStations.cycle()); // Radio stations
+  input.on('KeyC', () => chaseCam.toggle());     // Chase cam
+  input.on('Escape', () => settings.toggle());   // Settings menu
+
+  // Return update function for game loop
+  return (dt, elapsed) => {
+    if (boost.update) boost.update(dt);
+    if (photo.update) photo.update(dt);
+    if (radioStations.update) radioStations.update(dt);
+    if (weather.update) weather.update(dt, elapsed);
+    if (minimap.update) minimap.update(dt);
+    if (wantedSys.update) wantedSys.update(dt);
+    if (chaseCam.update) chaseCam.update(dt);
+    if (achievements.update) achievements.update(dt);
+    if (deliveries.update) deliveries.update(dt);
+    if (settings.update) settings.update(dt);
+  };
+}
+
 init();

@@ -2,7 +2,7 @@
  * Vehicles for Maravilla - parked cars, traffic AI, player driving
  */
 import { VEHICLE, TRAFFIC } from './config.js';
-import { clamp, lerp, angleDiff, wrapAngle, normalizeVec2, vec2Length } from './math.js';
+import { clamp, lerp, angleDiff, wrapAngle, normalizeVec2, vec2Length, distance2D } from './math.js';
 import * as THREE from 'three';
 
 export const CAR_TYPES = [

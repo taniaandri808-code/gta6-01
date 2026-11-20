@@ -67,7 +67,7 @@ export class Player {
     const group = new THREE.Group();
     
     // Body
-    const bodyGeo = new THREE.CapsuleGeometry(0.3, 1.0, 4, 8);
+    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.3, 1.0, 12);
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a90d9, roughness: 0.7 });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 1.0;

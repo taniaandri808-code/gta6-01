@@ -119,7 +119,6 @@ export class UI {
       ctx.arc(size / 2 + (b.x - px) * scale, size / 2 + (b.z - pz) * scale, 4, 0, Math.PI * 2);
       ctx.fill();
     }
-  }
     const blip = (obj, color, radius) => {
       if (!obj || !obj.position) return;
       ctx.fillStyle = color;

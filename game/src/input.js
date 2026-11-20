@@ -9,7 +9,17 @@ export class InputManager {
     this.keysReleased = new Set();
     this.mouse = { x: 0, y: 0, deltaX: 0, deltaY: 0, buttons: new Set() };
     this.locked = false;
+    this._listeners = {};
     this._bindEvents();
+  }
+
+  on(code, fn) {
+    (this._listeners[code] = this._listeners[code] || []).push(fn);
+  }
+
+  _fire(code) {
+    const fns = this._listeners[code];
+    if (fns) for (const fn of fns) { try { fn(); } catch (err) { console.error(err); } }
   }
 
   _bindEvents() {
@@ -17,6 +27,7 @@ export class InputManager {
       const code = e.code;
       if (!this.keys.has(code)) {
         this.keysPressed.add(code);
+        this._fire(code);
       }
       this.keys.add(code);
       
