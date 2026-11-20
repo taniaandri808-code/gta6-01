@@ -96,7 +96,7 @@ export const WEAPONS = [
 
 export const MISSIONS = [
   { id: 'intro_drive', name: 'Welcome to Maravilla', giver: 'Marisol Vega', giverPortrait: 'marisol',
-    storyText: 'Marisol Vega leans against her Vesper. "Welcome to Maravilla, kid. This city eats the weak for breakfast. Let me show you the ropes — drive me to the safehouse in Costa Verde. Don't scratch the paint."',
+    storyText: 'Marisol Vega leans against her Vesper. "Welcome to Maravilla, kid. This city eats the weak for breakfast. Let me show you the ropes — drive me to the safehouse in Costa Verde. Don\'t scratch the paint."',
     objectives: [{ type: 'drive', target: { x: 480, z: 380 }, radius: 15, description: 'Drive to Costa Verde safehouse' }],
     timeLimit: 180, rewards: { cash: 500, rep: 100 }, unlocks: ['car_theft'] },
   { id: 'car_theft', name: 'Midnight Requisition', giver: 'Dante Reyes', giverPortrait: 'dante',
@@ -106,31 +106,31 @@ export const MISSIONS = [
       { type: 'drive', target: { x: 320, z: -480 }, radius: 10, description: 'Deliver to Industrial garage' }],
     timeLimit: 300, rewards: { cash: 1500, rep: 250 }, unlocks: ['checkpoint_race'] },
   { id: 'checkpoint_race', name: 'Costa Verde Strip', giver: 'Marisol Vega', giverPortrait: 'marisol',
-    storyText: 'Marisol grins. "The Strip. 6 checkpoints. 90 seconds. The locals bet on this. Win, and you eat good tonight. Lose... well, you don't want to lose."',
+    storyText: 'Marisol grins. "The Strip. 6 checkpoints. 90 seconds. The locals bet on this. Win, and you eat good tonight. Lose... well, you don\'t want to lose."',
     objectives: [{ type: 'checkpoint', checkpoints: [
       { x: 500, z: 400 }, { x: 600, z: 450 }, { x: 680, z: 350 },
       { x: 580, z: 280 }, { x: 450, z: 300 }, { x: 480, z: 380 }
     ], timeLimit: 90, description: 'Complete the checkpoint race' }],
     timeLimit: 120, rewards: { cash: 2000, rep: 400 }, unlocks: ['target_elimination'] },
   { id: 'target_elimination', name: 'Silent Partner', giver: 'Old Tiburon', giverPortrait: 'tiburon',
-    storyText: 'Old Tiburon's voice rasps like dry coral. "A snitch in Barrio Sol. Name of Ruiz. He talks to the federales. Make it quiet. Make it permanent. His crew patrols the plaza — watch your six."',
+    storyText: 'Old Tiburon\'s voice rasps like dry coral. "A snitch in Barrio Sol. Name of Ruiz. He talks to the federales. Make it quiet. Make it permanent. His crew patrols the plaza — watch your six."',
     objectives: [
       { type: 'goto', target: { x: -280, z: 520 }, radius: 30, description: 'Locate Ruiz in Barrio Sol plaza' },
       { type: 'kill', target: 'ruiz', count: 1, description: 'Eliminate Ruiz' },
       { type: 'escape', target: { x: -280, z: 520 }, radius: 80, description: 'Leave the area' }],
     timeLimit: 240, rewards: { cash: 3000, rep: 600 }, unlocks: ['evade_police'] },
   { id: 'evade_police', name: 'Heat Wave', giver: 'Yara Campos', giverPortrait: 'yara',
-    storyText: 'Yara adjusts her headset. "You're hot. Three stars. I need you to survive 60 seconds while I scrub the databases. Don't get caught. Don't die. The chopper has thermal — stay under cover."',
+    storyText: 'Yara adjusts her headset. "You\'re hot. Three stars. I need you to survive 60 seconds while I scrub the databases. Don\'t get caught. Don\'t die. The chopper has thermal — stay under cover."',
     objectives: [{ type: 'survive', duration: 60, wantedLevel: 3, description: 'Evade police for 60 seconds at 3 stars' }],
     timeLimit: 90, rewards: { cash: 4000, rep: 800 }, unlocks: ['heli_escape'] },
   { id: 'heli_escape', name: 'Rotor Wash', giver: 'Dante Reyes', giverPortrait: 'dante',
-    storyText: 'Dante hands you a rocket launcher with a smirk. "The chopper's been a problem. Take it down. Then get to the extract point at The Docks. My guy has a boat waiting."',
+    storyText: 'Dante hands you a rocket launcher with a smirk. "The chopper\'s been a problem. Take it down. Then get to the extract point at The Docks. My guy has a boat waiting."',
     objectives: [
       { type: 'destroy_heli', count: 1, description: 'Destroy the police helicopter' },
       { type: 'drive', target: { x: -580, z: -120 }, radius: 15, description: 'Reach The Docks extraction' }],
     timeLimit: 300, rewards: { cash: 6000, rep: 1200 }, unlocks: ['docks_heist'] },
   { id: 'docks_heist', name: 'Final Score', giver: 'Marisol Vega', giverPortrait: 'marisol',
-    storyText: 'Marisol's eyes are hard. "The big one. Containers at The Docks. Four packages. Four-star getaway. Every cop in Maravilla will be on us. We do this, we own this city. You ready?"',
+    storyText: 'Marisol\'s eyes are hard. "The big one. Containers at The Docks. Four packages. Four-star getaway. Every cop in Maravilla will be on us. We do this, we own this city. You ready?"',
     objectives: [
       { type: 'collect', items: [
         { x: -620, z: -80 }, { x: -580, z: -120 }, { x: -540, z: -150 }, { x: -500, z: -100 }
@@ -171,3 +171,17 @@ export const COPS = {
   vehicleColors: [0x001133, 0x001133, 0x001133, 0x001133],
   helicopterColor: 0x001133, searchlightColor: 0xFFFFFF, searchlightIntensity: 2.5, searchlightAngle: Math.PI/6,
 };
+
+// Derived tuning values the simulation modules read (kept here so tuning lives in one file).
+Object.assign(PLAYER, {
+  sprintSpeed: 14,
+  crouchSpeed: 3,
+  maxStamina: 100,
+  staminaRegen: 18,
+  staminaDrain: 25,
+  healthRegenDelay: 6,
+  healthRegenRate: 8,
+});
+Object.assign(WORLD, { cityRadius: WORLD.size * 0.5 });
+Object.assign(TRAFFIC, { maxCars: 32 });
+Object.assign(PEDS, { reactionDistance: 40 });
